@@ -4,7 +4,6 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { AccountAuthProvider } from "./contexts/AccountAuthContext";
 import Home from "./pages/Home";
 import ContactsPage from "./pages/ContactsPage";
 import ContactsEntry from "./pages/ContactsEntry";
@@ -18,11 +17,7 @@ function Router() {
   return (
     <Switch>
       <Route path={"/account-entry"} component={AccountEntry} />
-      <Route path={"/account"}>
-        <AccountAuthProvider>
-          <AccountManagement />
-        </AccountAuthProvider>
-      </Route>
+      <Route path={"/account"} component={AccountManagement} />
       <Route path={"/request-scheduling"} component={RequestScheduling} />
       <Route path={"/messaging"} component={MessagingPage} />
       <Route path={"/contacts"} component={ContactsEntry} />
