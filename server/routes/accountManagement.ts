@@ -69,6 +69,10 @@ async function ghlRequest({
   return response.data;
 }
 
+async function getLocationAccessToken(locationId: string): Promise<string> {
+  return getValidAccessToken(locationId);
+}
+
 /**
  * GET /api/auth/location-token?locationId=...
  * Exchange agency token for location-scoped token
@@ -103,6 +107,225 @@ router.get('/auth/location-token', async (req: Request, res: Response) => {
     console.error('Location token error:', error.message);
     res.status(error.response?.status || 500).json({
       error: error.message || 'Failed to get location token',
+    });
+  }
+});
+
+/**
+ * GET /api/account/transactions?locationId=...&limit=...&offset=...
+ * Proxy payment transactions through the backend using the stored location token.
+ */
+router.get('/account/transactions', async (req: Request, res: Response) => {
+  try {
+    const { locationId, limit, offset } = req.query;
+
+    if (!locationId || typeof locationId !== 'string') {
+      return res.status(400).json({ error: 'locationId query parameter is required' });
+    }
+
+    const accessToken = await getLocationAccessToken(locationId);
+
+    const result = await ghlRequest({
+      method: 'GET',
+      path: '/payments/transactions/',
+      token: accessToken,
+      params: {
+        locationId,
+        limit: typeof limit === 'string' ? limit : undefined,
+        offset: typeof offset === 'string' ? offset : undefined,
+      },
+    });
+
+    res.json(result);
+  } catch (error: any) {
+    console.error('Transactions proxy error:', error.message);
+    res.status(error.response?.status || 500).json({
+      error: error.message || 'Failed to fetch transactions',
+    });
+  }
+});
+
+/**
+ * GET /api/account/users?locationId=...
+ * List users from the backend using the stored location token.
+ */
+router.get('/account/users', async (req: Request, res: Response) => {
+  try {
+    const { locationId } = req.query;
+
+    if (!locationId || typeof locationId !== 'string') {
+      return res.status(400).json({ error: 'locationId query parameter is required' });
+    }
+
+    const accessToken = await getLocationAccessToken(locationId);
+
+    const result = await ghlRequest({
+      method: 'GET',
+      path: '/users/',
+      token: accessToken,
+      params: { locationId },
+    });
+
+    res.json(result);
+  } catch (error: any) {
+    console.error('Users list proxy error:', error.message);
+    res.status(error.response?.status || 500).json({
+      error: error.message || 'Failed to fetch users',
+    });
+  }
+});
+
+/**
+ * GET /api/account/users/:userId?locationId=...
+ * Fetch one user from the backend using the stored location token.
+ */
+router.get('/account/users/:userId', async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const { locationId } = req.query;
+
+    if (!locationId || typeof locationId !== 'string') {
+      return res.status(400).json({ error: 'locationId query parameter is required' });
+    }
+
+    const accessToken = await getLocationAccessToken(locationId);
+
+    const result = await ghlRequest({
+      method: 'GET',
+      path: `/users/${userId}`,
+      token: accessToken,
+    });
+
+    res.json(result);
+  } catch (error: any) {
+    console.error('User detail proxy error:', error.message);
+    res.status(error.response?.status || 500).json({
+      error: error.message || 'Failed to fetch user details',
+    });
+  }
+});
+
+/**
+ * POST /api/account/users
+ * Create a user through the backend using the stored location token.
+ */
+router.post('/account/users', async (req: Request, res: Response) => {
+  try {
+    const {
+      locationId,
+      firstName,
+      lastName,
+      email,
+      password,
+      phone,
+      extension,
+      type,
+      role,
+      permissions,
+    } = req.body;
+
+    if (!locationId || typeof locationId !== 'string') {
+      return res.status(400).json({ error: 'locationId is required' });
+    }
+
+    const companyId = await resolveCompanyId(locationId);
+    const accessToken = await getLocationAccessToken(locationId);
+
+    const result = await ghlRequest({
+      method: 'POST',
+      path: '/users/',
+      token: accessToken,
+      data: {
+        companyId,
+        firstName,
+        lastName,
+        name: `${firstName} ${lastName}`.trim(),
+        email,
+        password,
+        phone: phone || undefined,
+        extension: extension || undefined,
+        avatar: '',
+        type,
+        role,
+        locationIds: [locationId],
+        permissions,
+      },
+    });
+
+    res.json(result);
+  } catch (error: any) {
+    console.error('Create user proxy error:', error.message);
+    res.status(error.response?.status || 500).json({
+      error: error.response?.data?.message || error.message || 'Failed to create user',
+    });
+  }
+});
+
+/**
+ * PUT /api/account/users/:userId
+ * Update a user through the backend using the stored location token.
+ */
+router.put('/account/users/:userId', async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const { locationId, firstName, lastName, email, phone, extension, roles, permissions } = req.body;
+
+    if (!locationId || typeof locationId !== 'string') {
+      return res.status(400).json({ error: 'locationId is required' });
+    }
+
+    const accessToken = await getLocationAccessToken(locationId);
+
+    const result = await ghlRequest({
+      method: 'PUT',
+      path: `/users/${userId}`,
+      token: accessToken,
+      data: {
+        firstName,
+        lastName,
+        email,
+        phone,
+        extension,
+        roles,
+        permissions,
+      },
+    });
+
+    res.json(result);
+  } catch (error: any) {
+    console.error('Update user proxy error:', error.message);
+    res.status(error.response?.status || 500).json({
+      error: error.response?.data?.message || error.message || 'Failed to update user',
+    });
+  }
+});
+
+/**
+ * DELETE /api/account/users/:userId
+ * Delete a user through the backend using the stored location token.
+ */
+router.delete('/account/users/:userId', async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const { locationId } = req.body;
+
+    if (!locationId || typeof locationId !== 'string') {
+      return res.status(400).json({ error: 'locationId is required' });
+    }
+
+    const accessToken = await getLocationAccessToken(locationId);
+
+    const result = await ghlRequest({
+      method: 'DELETE',
+      path: `/users/${userId}`,
+      token: accessToken,
+    });
+
+    res.json(result);
+  } catch (error: any) {
+    console.error('Delete user proxy error:', error.message);
+    res.status(error.response?.status || 500).json({
+      error: error.response?.data?.message || error.message || 'Failed to delete user',
     });
   }
 });

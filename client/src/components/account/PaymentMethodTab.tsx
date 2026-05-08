@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useGhlApi } from '@/hooks/useGhlApi';
 import { getBackendUrl } from '@/lib/backend';
 import {
   Card,
@@ -102,25 +101,18 @@ export function PaymentMethodTab({ locationId }: PaymentMethodTabProps) {
       setErrorTransactions(null);
 
       const offset = (page - 1) * ITEMS_PER_PAGE;
-      const { data, loading, error, execute } = useGhlApi<any>(
-        `/payments/transactions/`,
-        {
-          params: {
-            locationId,
-            limit: ITEMS_PER_PAGE,
-            offset,
-          },
-        }
+      const response = await fetch(
+        getBackendUrl(`/api/account/transactions?locationId=${encodeURIComponent(locationId)}&limit=${ITEMS_PER_PAGE}&offset=${offset}`)
       );
 
-      const result = await execute();
-
-      if (result?.data) {
-        setTransactions(result.data);
-        setTotalTransactions(result.totalCount || 0);
-      } else if (error) {
-        setErrorTransactions(error);
+      if (!response.ok) {
+        throw new Error('Failed to fetch transactions');
       }
+
+      const result = await response.json();
+      const transactionList = result.data ?? result.transactions ?? [];
+      setTransactions(transactionList);
+      setTotalTransactions(result.totalCount || result.total || transactionList.length || 0);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch transactions';
       setErrorTransactions(message);

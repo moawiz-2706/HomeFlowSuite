@@ -1,8 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { AlertCircle, Link2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { trpc } from '@/lib/trpc';
-import { useAccountAuth } from '@/contexts/AccountAuthContext';
 import { TopNavBar } from '@/components/account/TopNavBar';
 import { PaymentMethodTab } from '@/components/account/PaymentMethodTab';
 import { UpdatePaymentTab } from '@/components/account/UpdatePaymentTab';
@@ -13,9 +12,11 @@ import { LoadingSpinner } from '@/components/account/AccountSharedUI';
 
 export default function AccountManagement() {
   const [activeTab, setActiveTab] = useState('payment-method');
-  
-  // Get location token from context (AccountAuthProvider provides this)
-  const { loading: tokenLoading, error: tokenError, locationId, locationToken, retryTokenFetch } = useAccountAuth();
+
+  const locationId = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('locationId') || '';
+  }, []);
 
   // Also verify connection via tRPC (same pattern as other pages)
   const connectionQuery = trpc.ghl.connectionStatus.useQuery(
@@ -23,27 +24,39 @@ export default function AccountManagement() {
     { enabled: !!locationId, refetchInterval: 60000 }
   );
 
-  const isLoading = tokenLoading || connectionQuery.isLoading;
-  const isError = tokenError || connectionQuery.isError;
+  const isLoading = connectionQuery.isLoading;
+  const isError = connectionQuery.isError;
   const isConnected = connectionQuery.data?.connected ?? false;
-  const errorMessage = tokenError || (connectionQuery.error instanceof Error ? connectionQuery.error.message : undefined);
+  const errorMessage = connectionQuery.error instanceof Error ? connectionQuery.error.message : undefined;
+
+  if (!locationId) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center max-w-md">
+          <AlertCircle className="h-12 w-12 mx-auto text-red-500 mb-4" />
+          <h1 className="text-lg font-semibold text-gray-900 mb-2">Failed to Load Account</h1>
+          <p className="text-sm text-gray-600 mb-6">No locationId was provided in the URL.</p>
+        </div>
+      </div>
+    );
+  }
 
   // ─── Loading ──────────────────────────────────────────────────────
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
-  // ─── Token Fetch or Connection Error ───────────────────────────────
-  if (isError || !locationToken || !locationId) {
+  // ─── Connection Error ──────────────────────────────────────────────
+  if (isError) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center max-w-md">
           <AlertCircle className="h-12 w-12 mx-auto text-red-500 mb-4" />
           <h1 className="text-lg font-semibold text-gray-900 mb-2">Failed to Load Account</h1>
           <p className="text-sm text-gray-600 mb-6">
-            {errorMessage || 'Unable to authenticate. Please check the URL and try again.'}
+            {errorMessage || 'Unable to verify the account connection. Please try again.'}
           </p>
-          <Button onClick={retryTokenFetch} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={() => connectionQuery.refetch()} className="bg-blue-600 hover:bg-blue-700">
             Try Again
           </Button>
         </div>

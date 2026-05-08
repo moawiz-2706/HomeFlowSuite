@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { useAccountAuth } from '@/contexts/AccountAuthContext';
+import { getBackendUrl } from '@/lib/backend';
 import { Card } from '@/components/account/AccountSharedUI';
 import { validateEmail, validatePassword } from '@/lib/accountManagement.utils';
-import { ALL_PERMISSIONS, DEFAULT_PERMISSIONS, COMPANY_ID } from '@/lib/accountManagement.const';
+import { ALL_PERMISSIONS, DEFAULT_PERMISSIONS } from '@/lib/accountManagement.const';
 
 interface AddUserTabProps {
   locationId: string;
@@ -13,7 +13,6 @@ interface AddUserTabProps {
 }
 
 export function AddUserTab({ locationId, onSuccess }: AddUserTabProps) {
-  const { locationToken } = useAccountAuth();
   const [submitting, setSubmitting] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
 
@@ -100,26 +99,21 @@ export function AddUserTab({ locationId, onSuccess }: AddUserTabProps) {
       setSubmitting(true);
       setEmailError(null);
 
-      const response = await fetch('https://services.leadconnectorhq.com/users/', {
+      const response = await fetch(getBackendUrl('/api/account/users'), {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${locationToken}`,
-          'Version': '2021-07-28',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          companyId: COMPANY_ID,
+          locationId,
           firstName: formData.firstName.trim(),
           lastName: formData.lastName.trim(),
-          name: `${formData.firstName.trim()} ${formData.lastName.trim()}`,
           email: formData.email.trim(),
           password: formData.password,
           phone: formData.phone.trim() || undefined,
           extension: formData.extension.trim() || undefined,
-          avatar: '',
           type: formData.type,
           role: formData.role,
-          locationIds: [locationId],
           permissions: formData.permissions,
         }),
       });

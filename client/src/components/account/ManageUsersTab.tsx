@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { Trash2, Edit2, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { useAccountAuth } from '@/contexts/AccountAuthContext';
-import { useGhlApi } from '@/hooks/useGhlApi';
+import { getBackendUrl } from '@/lib/backend';
 import {
   Card,
   SkeletonTable,
@@ -40,7 +39,6 @@ interface ManageUsersTabProps {
 }
 
 export function ManageUsersTab({ locationId, onAddUserClick }: ManageUsersTabProps) {
-  const { locationToken } = useAccountAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -56,12 +54,7 @@ export function ManageUsersTab({ locationId, onAddUserClick }: ManageUsersTabPro
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`https://services.leadconnectorhq.com/users/?locationId=${locationId}`, {
-        headers: {
-          'Authorization': `Bearer ${locationToken}`,
-          'Version': '2021-07-28',
-        },
-      });
+      const response = await fetch(getBackendUrl(`/api/account/users?locationId=${encodeURIComponent(locationId)}`));
 
       if (!response.ok) {
         throw new Error('Failed to fetch users');
@@ -81,10 +74,8 @@ export function ManageUsersTab({ locationId, onAddUserClick }: ManageUsersTabPro
   };
 
   useEffect(() => {
-    if (locationToken) {
-      fetchUsers();
-    }
-  }, [locationId, locationToken]);
+    fetchUsers();
+  }, [locationId]);
 
   useEffect(() => {
     const filtered = users.filter((user) => {
@@ -103,13 +94,7 @@ export function ManageUsersTab({ locationId, onAddUserClick }: ManageUsersTabPro
     try {
       // Fetch full user details including permissions
       const response = await fetch(
-        `https://services.leadconnectorhq.com/users/${user.id}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${locationToken}`,
-            'Version': '2021-07-28',
-          },
-        }
+        getBackendUrl(`/api/account/users/${user.id}?locationId=${encodeURIComponent(locationId)}`)
       );
 
       if (!response.ok) {
@@ -132,26 +117,22 @@ export function ManageUsersTab({ locationId, onAddUserClick }: ManageUsersTabPro
     try {
       setUpdatingUser(true);
 
-      const response = await fetch(
-        `https://services.leadconnectorhq.com/users/${updatedUser.id}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${locationToken}`,
-            'Version': '2021-07-28',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            firstName: updatedUser.firstName,
-            lastName: updatedUser.lastName,
-            email: updatedUser.email,
-            phone: updatedUser.phone,
-            extension: updatedUser.extension,
-            roles: updatedUser.roles,
-            permissions: updatedUser.permissions,
-          }),
-        }
-      );
+      const response = await fetch(getBackendUrl(`/api/account/users/${updatedUser.id}`), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          locationId,
+          firstName: updatedUser.firstName,
+          lastName: updatedUser.lastName,
+          email: updatedUser.email,
+          phone: updatedUser.phone,
+          extension: updatedUser.extension,
+          roles: updatedUser.roles,
+          permissions: updatedUser.permissions,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error('Failed to update user');
@@ -172,16 +153,13 @@ export function ManageUsersTab({ locationId, onAddUserClick }: ManageUsersTabPro
     try {
       setDeletingUserId(userId);
 
-      const response = await fetch(
-        `https://services.leadconnectorhq.com/users/${userId}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${locationToken}`,
-            'Version': '2021-07-28',
-          },
-        }
-      );
+      const response = await fetch(getBackendUrl(`/api/account/users/${userId}`), {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ locationId }),
+      });
 
       if (!response.ok) {
         throw new Error('Failed to delete user');
