@@ -22,6 +22,15 @@ const GHL_BASE_URL = "https://services.leadconnectorhq.com";
 const GHL_API_VERSION = "2021-07-28";
 // Refresh tokens 10 minutes before they expire
 const TOKEN_REFRESH_BUFFER_MS = 10 * 60 * 1000;
+const PIPELINE_CACHE_TTL_MS = 10 * 60 * 1000;
+
+type PipelineRecord = { id: string; name: string };
+type PipelineCacheEntry = {
+  cachedAt: number;
+  promise: Promise<PipelineRecord[]>;
+};
+
+const pipelineCache = new Map<string, PipelineCacheEntry>();
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -421,6 +430,32 @@ export async function getPipelines(
       name: typeof pipeline.name === "string" ? pipeline.name : "",
     }))
     .filter((p) => p.id && p.name);
+}
+
+async function getPipelinesCached(locationId: string): Promise<PipelineRecord[]> {
+  const now = Date.now();
+  const cached = pipelineCache.get(locationId);
+
+  if (cached && now - cached.cachedAt < PIPELINE_CACHE_TTL_MS) {
+    return cached.promise;
+  }
+
+  const promise = getPipelines(locationId).catch((error) => {
+    pipelineCache.delete(locationId);
+    throw error;
+  });
+
+  pipelineCache.set(locationId, {
+    cachedAt: now,
+    promise,
+  });
+
+  return promise;
+}
+
+export async function getReviewPipelineId(locationId: string): Promise<string | null> {
+  const pipelines = await getPipelinesCached(locationId);
+  return findReviewPipelineId(pipelines);
 }
 
 /**
@@ -1325,8 +1360,7 @@ export async function syncContactReviewStatus(locationId: string, contactId: str
   synced: boolean;
 }> {
   const contact = await getContactById(locationId, contactId);
-  const pipelines = await getPipelines(locationId);
-  const reviewPipelineId = findReviewPipelineId(pipelines);
+  const reviewPipelineId = await getReviewPipelineId(locationId);
 
   let isWonInReviewPipeline = false;
   if (reviewPipelineId) {

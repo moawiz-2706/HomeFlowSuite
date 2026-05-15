@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import {
   Ban,
   CheckCircle2,
@@ -139,6 +139,7 @@ export default function ContactsPage() {
     phone: "",
     dnd: false,
   });
+  const lastStatusRefreshKeyRef = useRef<string>("");
 
   const currentCursor = cursorHistory[cursorHistory.length - 1];
 
@@ -165,12 +166,17 @@ export default function ContactsPage() {
   const refreshContactStatusMutation = trpc.ghl.refreshContactStatus.useMutation();
   const updateContactMutation = trpc.ghl.updateContact.useMutation();
   const deleteContactMutation = trpc.ghl.deleteContact.useMutation();
-  const utils = trpc.useUtils();
 
   // Enhance contacts with opportunity-based status
   useEffect(() => {
     const enhanceContacts = async () => {
       if (!contactsQuery.data?.contacts?.length) return;
+
+      const refreshKey = `${locationId}:${contactsQuery.data.contacts.map((contact) => contact.id).join(",")}`;
+      if (lastStatusRefreshKeyRef.current === refreshKey) {
+        return;
+      }
+      lastStatusRefreshKeyRef.current = refreshKey;
 
       const enhanced = new Map<string, ContactStatus>();
 
@@ -242,36 +248,20 @@ export default function ContactsPage() {
   };
 
   // Contact action handlers
-  const handleOpenMenu = async (contact: EnhancedContact, type: "view" | "edit" | "delete") => {
+  const handleOpenMenu = (contact: EnhancedContact, type: "view" | "edit" | "delete") => {
     setSelectedContact(contact);
     setActionType(type);
 
     if (type === "edit") {
-      try {
-        const latestContact = await utils.ghl.getContact.fetch({
-          locationId,
-          contactId: contact.id,
-        });
-        const contactName = typeof latestContact.name === "string" ? latestContact.name : contact.name;
-        const parts = contactName.split(" ");
-        setEditForm({
-          firstName: typeof latestContact.firstName === "string" ? latestContact.firstName : parts[0] ?? "",
-          lastName:
-            typeof latestContact.lastName === "string"
-              ? latestContact.lastName
-              : parts.slice(1).join(" "),
-          name: contactName,
-          email: typeof latestContact.email === "string" ? latestContact.email : contact.email,
-          phone: typeof latestContact.phone === "string" ? latestContact.phone : contact.phone,
-          dnd: Boolean(latestContact.dnd) || contact.smsStatus === "DND" || contact.smsStatus === "Do Not Contact",
-        });
-      } catch (error) {
-        console.error("Error loading contact before edit:", error);
-        toast.error("Failed to load contact for editing", {
-          description: error instanceof Error ? error.message : "Unknown error",
-        });
-        return;
-      }
+      const parts = contact.name.split(" ");
+      setEditForm({
+        firstName: parts[0] ?? "",
+        lastName: parts.slice(1).join(" "),
+        name: contact.name,
+        email: contact.email,
+        phone: contact.phone,
+        dnd: contact.smsStatus === "DND" || contact.smsStatus === "Do Not Contact",
+      });
     }
 
     setIsDialogOpen(true);
