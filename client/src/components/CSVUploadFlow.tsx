@@ -94,16 +94,16 @@ export default function CSVUploadFlow({ locationId }: CSVUploadFlowProps) {
   return (
     <>
       {/* Step 1: Upload area (always visible in the right panel) */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <CSVUpload onFileUploaded={handleFileUploaded} />
 
-        <div className="rounded-lg border border-cyan-200 bg-cyan-50 p-3">
-          <p className="text-xs font-semibold text-slate-900 mb-2">Add contacts too:</p>
-          <div className="grid gap-1.5 text-xs">
+        <div className="rounded-lg border border-cyan-200 bg-cyan-50 p-4">
+          <p className="text-sm font-semibold text-slate-900 mb-2">Add contacts too:</p>
+          <div className="grid gap-2 text-sm">
             {TAG_OPTIONS.map((option) => (
               <label
                 key={option.value}
-                className="flex items-center gap-2 rounded-lg border border-cyan-200 bg-white p-2 cursor-pointer transition hover:bg-cyan-50"
+                className="flex items-center gap-3 rounded-lg border border-cyan-200 bg-white p-3 cursor-pointer transition hover:bg-cyan-50"
               >
                 <input
                   type="radio"
@@ -111,7 +111,7 @@ export default function CSVUploadFlow({ locationId }: CSVUploadFlowProps) {
                   value={option.value}
                   checked={tagOption === option.value}
                   onChange={() => setTagOption(option.value)}
-                  className="h-3 w-3 text-cyan-400 focus:ring-cyan-400"
+                  className="h-4 w-4 text-cyan-400 focus:ring-cyan-400"
                 />
                 <span className="font-medium text-slate-700">◉ {option.label}</span>
               </label>

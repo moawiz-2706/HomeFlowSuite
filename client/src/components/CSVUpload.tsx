@@ -90,14 +90,14 @@ export default function CSVUpload({ onFileUploaded }: CSVUploadProps) {
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {/* Drop Zone */}
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`relative flex flex-col items-center justify-center py-10 px-4 border-2 border-dashed rounded-lg cursor-pointer transition-all duration-200 ${
+        className={`relative flex flex-col items-center justify-center min-h-[250px] py-12 px-5 border-2 border-dashed rounded-lg cursor-pointer transition-all duration-200 ${
           isDragging
             ? 'border-cyan-400 bg-cyan-100/50 scale-[1.01]'
             : selectedFile
@@ -106,10 +106,10 @@ export default function CSVUpload({ onFileUploaded }: CSVUploadProps) {
         }`}
       >
         {selectedFile ? (
-          <div className="flex items-center gap-2">
-            <FileSpreadsheet className="h-6 w-6 text-cyan-500" />
+          <div className="flex items-center gap-3">
+            <FileSpreadsheet className="h-7 w-7 text-cyan-500" />
             <div>
-              <p className="text-xs font-semibold text-slate-900">{selectedFile.name}</p>
+              <p className="text-sm font-semibold text-slate-900">{selectedFile.name}</p>
               <p className="text-xs text-slate-500">
                 {(selectedFile.size / 1024).toFixed(1)} KB
               </p>
@@ -126,13 +126,13 @@ export default function CSVUpload({ onFileUploaded }: CSVUploadProps) {
           </div>
         ) : (
           <>
-            <div className="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center mb-2">
-              <Upload className="h-5 w-5 text-cyan-500" />
+            <div className="w-12 h-12 rounded-full bg-cyan-100 flex items-center justify-center mb-3">
+              <Upload className="h-6 w-6 text-cyan-500" />
             </div>
-            <p className="text-xs text-slate-900 font-semibold text-center">
+            <p className="text-sm text-slate-900 font-semibold text-center leading-tight">
               Drag and Drop<br />or<br /><span className="text-cyan-500 font-bold">Upload from Computer</span>
             </p>
-            <p className="text-xs text-slate-500 mt-1">CSV files only</p>
+            <p className="text-xs text-slate-500 mt-2">CSV files only</p>
           </>
         )}
 
