@@ -32,12 +32,13 @@ export default function AddContactsPage() {
       <div className="mx-auto flex h-screen max-w-[1260px] flex-col px-6 py-3">
         <div className="grid grid-cols-[1fr_80px_1fr] items-stretch gap-4 flex-1 overflow-hidden">
           <Card className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-300 bg-white p-0 shadow-[0_2px_10px_rgba(15,23,42,0.06)]">
-            <div className="px-5 pt-5">
+            <div className="flex items-start justify-between px-5 pt-5">
               <div className="inline-flex rounded-lg border border-cyan-300 bg-cyan-200 px-4 py-2 shadow-sm">
                 <h2 className="text-[28px] font-extrabold leading-none tracking-tight text-slate-900">
                   Add Single Contacts
                 </h2>
               </div>
+              <span className="pt-8 text-xs font-medium text-slate-500">* Required Fields</span>
             </div>
 
             <div className="flex-1 overflow-hidden px-6 pb-4 pt-3">
@@ -53,15 +54,32 @@ export default function AddContactsPage() {
           </div>
 
           <Card className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-300 bg-white p-0 shadow-[0_2px_10px_rgba(15,23,42,0.06)]">
-            <div className="px-5 pt-5">
+            <div className="flex items-start justify-between px-5 pt-5">
               <div className="inline-flex rounded-lg border border-cyan-300 bg-cyan-200 px-4 py-2 shadow-sm">
                 <h2 className="text-[28px] font-extrabold leading-none tracking-tight text-slate-900">
                   Upload CVS File
                 </h2>
               </div>
+              <span className="pt-8 text-xs font-medium text-slate-500">* Required Fields</span>
             </div>
 
             <div className="flex-1 overflow-hidden px-6 pb-4 pt-3">
+              <div className="mb-3 rounded-lg border border-cyan-200 bg-cyan-50 px-4 py-3">
+                <p className="text-sm font-semibold text-slate-900">Your CVS file should include the following:</p>
+                <div className="mt-2 grid grid-cols-3 gap-x-6 gap-y-1 text-sm text-slate-700">
+                  <div>*First Name</div>
+                  <div>*Phone Number</div>
+                  <div>*Number of Dogs</div>
+                  <div>Last Name</div>
+                  <div>*Email</div>
+                  <div>Last Time Scooped</div>
+                  <div>Street Address</div>
+                  <div>City</div>
+                  <div />
+                  <div>Zip Code</div>
+                  <div>State</div>
+                </div>
+              </div>
               <CSVUploadFlow locationId={locationId} />
             </div>
           </Card>
