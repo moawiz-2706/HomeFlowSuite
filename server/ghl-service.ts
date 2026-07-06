@@ -53,6 +53,7 @@ export interface GHLContactData {
   phone: string;
   dnd?: boolean;
   tagName?: string;
+  customFields?: Array<{ fieldKey: string; field_value?: unknown }>;
 }
 
 export interface GHLCreateContactResponse {
@@ -1255,6 +1256,10 @@ export async function createContact(
       locationId,
       dnd: contact.dnd || false,
       source: "Royal Review - Add Contacts",
+      customFields: contact.customFields?.map((field) => ({
+        key: field.fieldKey,
+        field_value: field.field_value,
+      })),
     }),
   });
 

@@ -39,6 +39,14 @@ const contactSchema = z.object({
   phone: z.string().optional().default(""),
   dnd: z.boolean().optional().default(false),
   tagName: z.string().optional(),
+  customFields: z
+    .array(
+      z.object({
+        fieldKey: z.string().min(1),
+        field_value: z.any().optional(),
+      })
+    )
+    .optional(),
 });
 
 // Batch contact schema
@@ -159,6 +167,7 @@ export const ghlRouter = router({
         phone: input.contact.phone ?? "",
         dnd: input.contact.dnd ?? false,
         tagName: input.contact.tagName,
+        customFields: input.contact.customFields,
       };
 
       const result = await processContact(

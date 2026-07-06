@@ -73,8 +73,10 @@ export default function AddContactsPage() {
                   <div>Last Name</div>
                   <div>*Email</div>
                   <div>Last Time Scooped</div>
+                  <div>Frequency</div>
                   <div>Street Address</div>
                   <div>City</div>
+                  <div />
                   <div />
                   <div>Zip Code</div>
                   <div>State</div>

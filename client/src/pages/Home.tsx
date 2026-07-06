@@ -178,6 +178,14 @@ export default function Home() {
           {/* Left Panel — Single Contact Form */}
           <div className="lg:pr-8 lg:border-r border-border">
             <div className="rounded-[32px] border border-border bg-card p-6 shadow-sm max-w-full">
+              <div className="mb-4 flex items-start justify-between">
+                <div className="inline-flex rounded-lg border border-cyan-300 bg-cyan-200 px-4 py-2 shadow-sm">
+                  <h2 className="text-[28px] font-extrabold leading-none tracking-tight text-slate-900">
+                    Add Single Contacts
+                  </h2>
+                </div>
+                <span className="pt-8 text-xs font-medium text-muted-foreground">* Required Fields</span>
+              </div>
               <SingleContactForm locationId={locationId} />
             </div>
           </div>
@@ -201,6 +209,34 @@ export default function Home() {
           {/* Right Panel — CSV Upload */}
           <div className="lg:pl-8">
             <div className="rounded-[32px] border border-border bg-card p-6 shadow-sm max-w-full">
+              <div className="mb-4 flex items-start justify-between">
+                <div className="inline-flex rounded-lg border border-cyan-300 bg-cyan-200 px-4 py-2 shadow-sm">
+                  <h2 className="text-[28px] font-extrabold leading-none tracking-tight text-slate-900">
+                    Upload CVS File
+                  </h2>
+                </div>
+                <span className="pt-8 text-xs font-medium text-muted-foreground">* Required Fields</span>
+              </div>
+
+              <div className="mb-4 rounded-lg border border-cyan-200 bg-cyan-50 px-4 py-3">
+                <p className="text-sm font-semibold text-slate-900">Your CVS file should include the following:</p>
+                <div className="mt-2 grid grid-cols-3 gap-x-6 gap-y-1 text-sm text-slate-700">
+                  <div>*First Name</div>
+                  <div>*Phone Number</div>
+                  <div>*Number of Dogs</div>
+                  <div>Last Name</div>
+                  <div>*Email</div>
+                  <div>Last Time Scooped</div>
+                  <div>Frequency</div>
+                  <div>Street Address</div>
+                  <div>City</div>
+                  <div />
+                  <div />
+                  <div>Zip Code</div>
+                  <div>State</div>
+                </div>
+              </div>
+
               <CSVUploadFlow locationId={locationId} />
             </div>
           </div>

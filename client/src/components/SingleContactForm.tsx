@@ -24,6 +24,7 @@ interface FormData {
   postalCode: string;
   numberOfDogs: string;
   lastTimeScooped: string;
+  frequency: string;
 }
 
 type ContactTagOption =
@@ -55,6 +56,7 @@ export default function SingleContactForm({ locationId }: SingleContactFormProps
     postalCode: "",
     numberOfDogs: "",
     lastTimeScooped: "",
+    frequency: "",
   });
   const [dnd, setDnd] = useState(false);
   const [tagOption, setTagOption] = useState<ContactTagOption>("lead-follow-up");
@@ -84,6 +86,7 @@ export default function SingleContactForm({ locationId }: SingleContactFormProps
         postalCode: "",
         numberOfDogs: "",
         lastTimeScooped: "",
+        frequency: "",
       });
       setDnd(false);
       setTagOption("lead-follow-up");
@@ -136,6 +139,10 @@ export default function SingleContactForm({ locationId }: SingleContactFormProps
         phone: formData.phone.trim(),
         dnd,
         tagName: tagOption,
+          customFields: [
+            { fieldKey: "last_time_scooped", field_value: formData.lastTimeScooped.trim() },
+            { fieldKey: "frequency", field_value: formData.frequency.trim() },
+          ],
       },
     });
   };
@@ -169,7 +176,7 @@ export default function SingleContactForm({ locationId }: SingleContactFormProps
         </div>
       </div>
 
-      <div className="grid flex-1 grid-rows-[auto_auto_auto_auto_auto_auto_auto_auto_auto_1fr_auto] gap-[6px] overflow-hidden">
+      <div className="grid flex-1 grid-rows-[auto_auto_auto_auto_auto_auto_auto_auto_auto_1fr_auto] gap-1.5 overflow-hidden">
         {/* First Name */}
       <div className="space-y-0.5">
         <label className="text-[15px] font-extrabold text-slate-800">*First Name</label>
@@ -277,7 +284,7 @@ export default function SingleContactForm({ locationId }: SingleContactFormProps
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-1.5">
+      <div className="grid grid-cols-3 gap-1.5">
         <div className="space-y-0.5">
           <label className="text-[15px] font-bold text-slate-700">*Number of Dogs</label>
           <input
@@ -295,6 +302,16 @@ export default function SingleContactForm({ locationId }: SingleContactFormProps
             value={formData.lastTimeScooped}
             onChange={handleChange("lastTimeScooped")}
             placeholder="Enter Date"
+            className="w-full rounded-sm border border-slate-300 bg-white px-2 py-1 text-xs placeholder:text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-400/30 focus:border-cyan-400"
+          />
+        </div>
+        <div className="space-y-0.5">
+          <label className="text-[15px] font-bold text-slate-700">Frequency</label>
+          <input
+            type="text"
+            value={formData.frequency}
+            onChange={handleChange("frequency")}
+            placeholder="Enter Frequency"
             className="w-full rounded-sm border border-slate-300 bg-white px-2 py-1 text-xs placeholder:text-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-400/30 focus:border-cyan-400"
           />
         </div>
